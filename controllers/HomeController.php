@@ -1,11 +1,9 @@
 <?php
 
-class HomeController
+class HomeController extends AbstractController
 {
     public function somethingAction(array $args)
     {
-        $argsString = implode(',', $args);
-
-        echo "Hello worlds this HomeController->somethingAction args = {$argsString}";
+        $this->template->renderView('something', $args);
     }
 }
