@@ -27,7 +27,29 @@ abstract class AbstractModel
         return self::getModelByData($data);
     }
 
-    private static function getModelByData(array $data): ?static
+    public static function getAll(): array
+    {
+        $connection = Db::getConnection();
+
+        $table = static::getTable();
+        $sql = "SELECT * FROM {$table}";
+
+        $result = $connection->prepare($sql);
+
+        $result->setFetchMode(PDO::FETCH_ASSOC);
+
+        $result->execute();
+        $data = $result->fetchAll();
+
+        $models = [];
+        foreach ($data as $modelData) {
+            $models[] = self::getModelByData($modelData);
+        }
+
+        return $models;
+    }
+
+    public static function getModelByData(array $data): ?static
     {
         $model = new static();
         foreach (static::getFields() as $field) {
@@ -37,5 +59,33 @@ abstract class AbstractModel
         }
 
         return $model;
+    }
+
+    public function save(): void
+    {
+        $fields = [];
+        $data = [];
+        foreach (static::getFields() as $field) {
+            if (isset($this->$field)) {
+                $fields[] = $field;
+                $data[] = $this->$field;
+            }
+        }
+
+        $queryFields = implode(',', $fields);
+
+        $rangePlace = array_fill(0, count($fields), '?');
+        $queryData = implode(',', $rangePlace);
+
+        $connection = Db::getConnection();
+        $table = static::getTable();
+        try {
+            $stmt = $connection->prepare("INSERT INTO $table ($queryFields) values ($queryData)");
+            $stmt->execute($data);
+        }catch(PDOException $e){
+            echo 'Error : ' . $e->getMessage();
+            echo '<br/>Error sql : ' . "'INSERT INTO $table ($queryFields) values ($queryData)'";
+            exit();
+        }
     }
 }
