@@ -82,7 +82,7 @@ abstract class AbstractModel
         try {
             $stmt = $connection->prepare("INSERT INTO $table ($queryFields) values ($queryData)");
             $stmt->execute($data);
-        }catch(PDOException $e){
+        } catch(PDOException $e) {
             echo 'Error : ' . $e->getMessage();
             echo '<br/>Error sql : ' . "'INSERT INTO $table ($queryFields) values ($queryData)'";
             exit();
